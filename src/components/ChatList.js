@@ -6,7 +6,8 @@ import CosmicStyles from './CosmicStyles';
 
 export default function ChatList({ chats, onSelectChat, onCreateChat, activeChatId, onLogout }) {
     const user = mockNhost.auth.getUser();
-    const { currentThemeData } = useTheme();
+    // Removed unused variable
+    useTheme();
     
     return (
         <div className="flex flex-col h-full bg-black/50 backdrop-blur-xl border-r border-cyan-300/20">

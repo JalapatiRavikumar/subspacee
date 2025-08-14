@@ -8,27 +8,72 @@ export const mockNhost = {
         return { user: null, error: { message: 'Email and password are required.' } };
       }
       const newUser = { id: `user_${Date.now()}`, email, role: 'user' };
-      localStorage.setItem('mock_user', JSON.stringify(newUser));
-      localStorage.setItem('mock_jwt', `mock_jwt_for_${newUser.id}`);
+      try {
+        localStorage.setItem('mock_user', JSON.stringify(newUser));
+        localStorage.setItem('mock_jwt', `mock_jwt_for_${newUser.id}`);
+      } catch (e) {
+        console.error('LocalStorage error:', e);
+        // Fallback for environments without localStorage (like SSR)
+        window.mock_user = newUser;
+        window.mock_jwt = `mock_jwt_for_${newUser.id}`;
+      }
       return { user: newUser, session: { accessToken: `mock_jwt_for_${newUser.id}` }, error: null };
     },
     signIn: async ({ email }) => {
         // Simplified sign-in for this mock
         const existingUser = { id: `user_12345`, email, role: 'user' };
-        localStorage.setItem('mock_user', JSON.stringify(existingUser));
-        localStorage.setItem('mock_jwt', `mock_jwt_for_${existingUser.id}`);
+        try {
+          localStorage.setItem('mock_user', JSON.stringify(existingUser));
+          localStorage.setItem('mock_jwt', `mock_jwt_for_${existingUser.id}`);
+        } catch (e) {
+          console.error('LocalStorage error:', e);
+          // Fallback for environments without localStorage (like SSR)
+          window.mock_user = existingUser;
+          window.mock_jwt = `mock_jwt_for_${existingUser.id}`;
+        }
         return { user: existingUser, session: { accessToken: `mock_jwt_for_${existingUser.id}` }, error: null };
     },
     // In a real app, this clears the session.
     signOut: async () => {
-      localStorage.removeItem('mock_user');
-      localStorage.removeItem('mock_jwt');
+      try {
+        localStorage.removeItem('mock_user');
+        localStorage.removeItem('mock_jwt');
+      } catch (e) {
+        console.error('LocalStorage error:', e);
+        // Fallback for environments without localStorage (like SSR)
+        delete window.mock_user;
+        delete window.mock_jwt;
+      }
       return { error: null };
     },
     // This function simulates checking the auth state on app load.
     onAuthStateChanged: (callback) => {
-      const user = JSON.parse(localStorage.getItem('mock_user'));
-      const token = localStorage.getItem('mock_jwt');
+      let user, token;
+      try {
+        user = JSON.parse(localStorage.getItem('mock_user'));
+        token = localStorage.getItem('mock_jwt');
+      } catch (e) {
+        console.error('LocalStorage error:', e);
+        // Fallback for environments without localStorage (like SSR)
+        user = window.mock_user;
+        token = window.mock_jwt;
+      }
+      
+      // For Vercel deployment, auto-authenticate for demo purposes
+      if (!user || !token) {
+        const demoUser = { id: 'demo_user', email: 'demo@example.com', role: 'user' };
+        try {
+          localStorage.setItem('mock_user', JSON.stringify(demoUser));
+          localStorage.setItem('mock_jwt', 'demo_token');
+        } catch (e) {
+          console.error('LocalStorage error:', e);
+          window.mock_user = demoUser;
+          window.mock_jwt = 'demo_token';
+        }
+        user = demoUser;
+        token = 'demo_token';
+      }
+      
       if (user && token) {
         callback(true, { accessToken: token });
       } else {
@@ -38,7 +83,13 @@ export const mockNhost = {
       return { unsubscribe: () => {} };
     },
     getUser: () => {
-        return JSON.parse(localStorage.getItem('mock_user'));
+        try {
+          return JSON.parse(localStorage.getItem('mock_user'));
+        } catch (e) {
+          console.error('LocalStorage error:', e);
+          // Fallback for environments without localStorage (like SSR)
+          return window.mock_user || null;
+        }
     }
   },
 };

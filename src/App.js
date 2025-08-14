@@ -10,17 +10,26 @@ import CosmicStyles from './components/CosmicStyles';
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [client, setClient] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // FIX: Correctly call the function on the 'auth' object 
-    mockNhost.auth.onAuthStateChanged((isAuth) => { 
-      setIsAuthenticated(isAuth); 
-      if (isAuth) { 
-        setClient(new MockGraphQLClient()); 
-      } else { 
-        setClient(null); 
-      } 
-    }); 
+    // Initialize authentication state
+    try {
+      // FIX: Correctly call the function on the 'auth' object 
+      mockNhost.auth.onAuthStateChanged((isAuth) => { 
+        console.log('Auth state changed:', isAuth);
+        setIsAuthenticated(isAuth); 
+        if (isAuth) { 
+          setClient(new MockGraphQLClient()); 
+        } else { 
+          setClient(null); 
+        } 
+        setIsLoading(false);
+      }); 
+    } catch (error) {
+      console.error('Authentication error:', error);
+      setIsLoading(false);
+    }
   }, []);
 
   const handleLogout = async () => {
@@ -35,7 +44,11 @@ export default function App() {
   return (
     <ThemeProvider>
       <CosmicStyles />
-      {!isAuthenticated ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center h-screen bg-slate-900">
+          <div className="text-white text-xl">Loading application...</div>
+        </div>
+      ) : !isAuthenticated ? (
         <AuthPage onLogin={() => {
           setIsAuthenticated(true);
           setClient(new MockGraphQLClient());

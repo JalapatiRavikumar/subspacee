@@ -33,23 +33,6 @@ export const ThemeProvider = ({ children }) => {
 
   console.log('ThemeProvider initialized with theme:', currentTheme);
 
-  // Initialize CSS custom properties on mount
-  useEffect(() => {
-    const root = document.documentElement;
-    const defaultTheme = themes.default;
-    root.style.setProperty('--theme-primary', defaultTheme.colors.primary);
-    root.style.setProperty('--theme-secondary', defaultTheme.colors.secondary);
-    root.style.setProperty('--theme-accent', defaultTheme.colors.accent);
-    root.style.setProperty('--theme-background', defaultTheme.colors.background);
-    root.style.setProperty('--theme-surface', defaultTheme.colors.surface);
-    root.style.setProperty('--theme-text', defaultTheme.colors.text);
-    root.style.setProperty('--theme-border', defaultTheme.colors.border);
-    
-    // Initialize glow color variables for animations
-    root.style.setProperty('--glow-color', defaultTheme.colors.primary + '80');
-    root.style.setProperty('--glow-color-brighter', defaultTheme.colors.primary);
-  }, []);
-
   const themes = {
     default: {
       name: 'Default',
@@ -103,6 +86,23 @@ export const ThemeProvider = ({ children }) => {
       }
     }
   };
+
+  // Initialize CSS custom properties on mount
+  useEffect(() => {
+    const root = document.documentElement;
+    const defaultTheme = themes.default;
+    root.style.setProperty('--theme-primary', defaultTheme.colors.primary);
+    root.style.setProperty('--theme-secondary', defaultTheme.colors.secondary);
+    root.style.setProperty('--theme-accent', defaultTheme.colors.accent);
+    root.style.setProperty('--theme-background', defaultTheme.colors.background);
+    root.style.setProperty('--theme-surface', defaultTheme.colors.surface);
+    root.style.setProperty('--theme-text', defaultTheme.colors.text);
+    root.style.setProperty('--theme-border', defaultTheme.colors.border);
+    
+    // Initialize glow color variables for animations
+    root.style.setProperty('--glow-color', defaultTheme.colors.primary + '80');
+    root.style.setProperty('--glow-color-brighter', defaultTheme.colors.primary);
+  }, [themes.default]); // Added themes.default as a dependency
 
   const changeTheme = (themeName) => {
     console.log('Changing theme from', currentTheme, 'to', themeName);
